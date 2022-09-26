@@ -58,4 +58,8 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
-GamespringTest/Library/Artifacts/00/000771635a267e72a29a00000acbbf5c
+GamespringTest/Library/Artifacts/*
+GamespringTest/Library/PackageCache/*
+GamespringTest/Library/ScriptAssemblies/*
+GamespringTest/Library/ShaderCache/*
+GamespringTest/Logs/*
