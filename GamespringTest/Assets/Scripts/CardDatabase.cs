@@ -8,7 +8,7 @@ using Enums;
 [CreateAssetMenu(fileName = "CardDatabase", menuName = "ScriptableObject/CardDatabase", order = int.MaxValue)]
 public class CardDatabase : ScriptableObject
 {
-    #region ����
+    #region 변수
 
     [SerializeField] private List<string> keys;
     [SerializeField] private List<Sprite> values;
@@ -18,7 +18,7 @@ public class CardDatabase : ScriptableObject
     #endregion
 
 
-    #region �Լ�
+    #region 함수
 
     private void OnEnable()
     {
@@ -31,13 +31,7 @@ public class CardDatabase : ScriptableObject
             {
                 for(int currentCardNumber = 1, maxNumber = 13; currentCardNumber <= maxNumber; currentCardNumber++)
                 {
-                    string replaceCardNumber;
-                    if (currentCardNumber == 1) replaceCardNumber = "A";
-                    else if (currentCardNumber == 11) replaceCardNumber = "J";
-                    else if (currentCardNumber == 12) replaceCardNumber = "Q";
-                    else if (currentCardNumber == 13) replaceCardNumber = "K";
-                    else replaceCardNumber = currentCardNumber.ToString();
-
+                    string replaceCardNumber = IntToCardNumber(currentCardNumber);
                     keys.Add($"{(CardSuitKind)currentSuit}_{replaceCardNumber}");
                 }
             }
@@ -48,7 +42,7 @@ public class CardDatabase : ScriptableObject
         var valueCount = values.Count;
         for(int i = 0, icount = keys.Count; i<icount; i++)
         {
-            //value ����� key ��Ϻ��� ���� ���
+            //value 목록이 key 목록보다 작으면
             if(i >= valueCount)
             {
                 cardDict.Add(keys[i], null);
@@ -60,10 +54,40 @@ public class CardDatabase : ScriptableObject
         }
     }
 
-    public Sprite GetCardSprite(string key)
+
+    /// <summary>
+    /// suitKind(하트, 클로버, 다이아몬트, 스페이스)<br/>
+    /// cardNumber 1=A ~ 11=J, 12=Q, 13=K 
+    /// </summary>
+    /// <param name="suitKind"></param>
+    /// <param name="cardNumber"></param>
+    /// <returns></returns>
+    public Sprite GetCardSprite(CardSuitKind suitKind, int cardNumber)
     {
-        if(cardDict.TryGetValue(key, out Sprite card)) return card;
+        string replaceCardNumber = IntToCardNumber(cardNumber);
+
+        if (cardDict.TryGetValue($"{suitKind}_{replaceCardNumber}", out Sprite card)) return card;
         return null;
+    }
+
+
+    /// <summary>
+    /// number 숫자의 범위는 1~13.<br/> 
+    /// 범위 안 값이 아닐 경우 null값 리턴
+    /// </summary>
+    private string IntToCardNumber(int number)
+    {
+        if (number <= 0 || number > 13) return null;
+
+
+        string replaceCardNumber;
+        if (number == 1) replaceCardNumber = "A";
+        else if (number == 11) replaceCardNumber = "J";
+        else if (number == 12) replaceCardNumber = "Q";
+        else if (number == 13) replaceCardNumber = "K";
+        else replaceCardNumber = number.ToString();
+
+        return replaceCardNumber;
     }
 
     #endregion
