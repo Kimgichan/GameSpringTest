@@ -1,9 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
+
 using UnityEngine;
 
 using Enums;
 
+//using Card = UnityEngine.GameObject;
 
 [CreateAssetMenu(fileName = "CardDatabase", menuName = "ScriptableObject/CardDatabase", order = int.MaxValue)]
 public class CardDatabase : ScriptableObject
@@ -11,10 +14,15 @@ public class CardDatabase : ScriptableObject
     #region 변수
 
     [SerializeField] private List<string> keys;
-    [SerializeField] private List<Sprite> values;
+    [SerializeField] private List<Card> values;
 
-    private Dictionary<string, Sprite> cardDict;
+    private Dictionary<string, Card> cardDict;
+    #endregion
 
+    #region 프로퍼티
+    public int CardSuitCount => 4;
+    public int CardMaxNumber => 13;
+    public int CardCount => keys.Count;
     #endregion
 
 
@@ -24,12 +32,15 @@ public class CardDatabase : ScriptableObject
     {
         if (keys == null || values == null) return;
 
-        if (keys.Count < 4 * 13)
+
+        var valueCount = values.Count;
+
+        if (keys.Count < CardSuitCount * CardMaxNumber)
         {
             keys.Clear();
-            for (int currentSuit = 0, suitCount = 4; currentSuit < suitCount; currentSuit++)
+            for (int currentSuit = 0, suitCount = CardSuitCount; currentSuit < suitCount; currentSuit++)
             {
-                for(int currentCardNumber = 1, maxNumber = 13; currentCardNumber <= maxNumber; currentCardNumber++)
+                for(int currentCardNumber = 1, maxNumber = CardMaxNumber; currentCardNumber <= maxNumber; currentCardNumber++)
                 {
                     string replaceCardNumber = IntToCardNumber(currentCardNumber);
                     keys.Add($"{(CardSuitKind)currentSuit}_{replaceCardNumber}");
@@ -37,9 +48,7 @@ public class CardDatabase : ScriptableObject
             }
         }
 
-        cardDict = new Dictionary<string, Sprite>();
-
-        var valueCount = values.Count;
+        cardDict = new Dictionary<string, Card>();
         for(int i = 0, icount = keys.Count; i<icount; i++)
         {
             //value 목록이 key 목록보다 작으면
@@ -52,6 +61,29 @@ public class CardDatabase : ScriptableObject
                 cardDict.Add(keys[i], values[i]);
             }
         }
+
+
+        #region 에디터(에서만) 작동 구문
+#if UNITY_EDITOR
+        {
+            int i = 0;
+            for (int currentSuit = 0, suitCount = CardSuitCount; currentSuit < suitCount; currentSuit++)
+            {
+                for (int currentCardNumber = 1, maxNumber = CardMaxNumber; currentCardNumber <= maxNumber; currentCardNumber++)
+                {
+                    if (i >= valueCount) return;
+
+                    if(values[i] != null)
+                    {
+                        values[i].Setting((CardSuitKind)currentSuit, currentCardNumber);
+                    }
+
+                    i += 1;
+                }
+            }
+        }
+#endif
+        #endregion
     }
 
 
@@ -62,20 +94,24 @@ public class CardDatabase : ScriptableObject
     /// <param name="suitKind"></param>
     /// <param name="cardNumber"></param>
     /// <returns></returns>
-    public Sprite GetCardSprite(CardSuitKind suitKind, int cardNumber)
+    public Card GetCard(CardSuitKind suitKind, int cardNumber)
     {
         string replaceCardNumber = IntToCardNumber(cardNumber);
 
-        if (cardDict.TryGetValue($"{suitKind}_{replaceCardNumber}", out Sprite card)) return card;
+        if (cardDict.TryGetValue($"{suitKind}_{replaceCardNumber}", out Card card)) return card;
         return null;
     }
+
+    public Card GetCard(int indx) => values[indx];
+
+    public int GetCardCount() => CardCount;
 
 
     /// <summary>
     /// number 숫자의 범위는 1~13.<br/> 
     /// 범위 안 값이 아닐 경우 null값 리턴
     /// </summary>
-    private string IntToCardNumber(int number)
+    public string IntToCardNumber(int number)
     {
         if (number <= 0 || number > 13) return null;
 

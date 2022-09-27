@@ -63,3 +63,5 @@ GamespringTest/Library/PackageCache/*
 GamespringTest/Library/ScriptAssemblies/*
 GamespringTest/Library/ShaderCache/*
 GamespringTest/Logs/*
+GamespringTest/Temp/*
+GamespringTest/obj/*
