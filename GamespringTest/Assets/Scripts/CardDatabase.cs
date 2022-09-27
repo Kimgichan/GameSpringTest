@@ -94,7 +94,7 @@ public class CardDatabase : ScriptableObject
     /// <param name="suitKind"></param>
     /// <param name="cardNumber"></param>
     /// <returns></returns>
-    public Card GetCard(CardSuitKind suitKind, int cardNumber)
+    public Card GetCardPrefab(CardSuitKind suitKind, int cardNumber)
     {
         string replaceCardNumber = IntToCardNumber(cardNumber);
 
@@ -102,9 +102,9 @@ public class CardDatabase : ScriptableObject
         return null;
     }
 
-    public Card GetCard(int indx) => values[indx];
+    public Card GetCardPrefab(int indx) => values[indx];
 
-    public int GetCardCount() => CardCount;
+    public int GetCardPrefabCount() => CardCount;
 
 
     /// <summary>

@@ -13,7 +13,7 @@ using NaughtyAttributes;
 public class GameController : MonoBehaviour
 {
     #region 변수
-    [SerializeField] private SettingController settingController;
+    [SerializeField] private TableController tableController;
     [SerializeField] private int maxRound;
     [SerializeField] private int shuffleGap;
 
@@ -28,7 +28,7 @@ public class GameController : MonoBehaviour
 
 
     #region 프로퍼티
-    public SettingController SettingController => settingController;
+    public TableController TableController => tableController;
     #endregion
 
 
@@ -195,9 +195,9 @@ public class GameController : MonoBehaviour
 
     private void PlaceCard()
     {
-        if (settingController == null)
+        if (tableController == null)
         {
-            Debug.LogWarning(settingController);
+            Debug.LogWarning(tableController);
             return;
         }
 
@@ -207,7 +207,7 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        settingController.Setting(row, column);
+        tableController.Setting(row, column);
 
         //카드 배치
         CardSetting();
@@ -247,8 +247,8 @@ public class GameController : MonoBehaviour
     /// </summary>
     private void CardSetting()
     {
-        var row = settingController.Row;
-        var column = settingController.Column;
+        var row = tableController.Row;
+        var column = tableController.Column;
 
         //현 라운드의 나올 카드 종류. 
         var cardKind = row * column / 2;
@@ -275,9 +275,17 @@ public class GameController : MonoBehaviour
             for(int r = 0; r < row; r++)
             {
                 var i = col * column + r;
-                var cardPos = settingController.GetPos(r, col);
+                var cardPos = tableController.GetPos(r, col);
 
+                var cardPrefab = GameManager.Instance.CardDB.GetCardPrefab(cardDeck[i % cardKind]);
+                var newCard = Instantiate(cardPrefab, tableController.transform);
+                newCard.transform.localScale = Vector3.one * 0.05f;
+                newCard.transform.position = tableController.transform.position;
 
+                cards.Add(newCard);
+
+                newCard.transform.localPosition = cardPos;
+                newCard.transform.localEulerAngles = new Vector3(-90f, 0f, 0f);
             }
         }
     }

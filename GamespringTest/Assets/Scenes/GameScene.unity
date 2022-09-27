@@ -283,10 +283,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70ff5e4b9e9e55742beba083d5fed840, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  settingController: {fileID: 1431772582}
+  tableController: {fileID: 1431772582}
   maxRound: 5
   shuffleGap: 4
-  cardAll: []
+  cards: []
   cardDeck: 
   round: 0
 --- !u!4 &820586422
@@ -314,7 +314,7 @@ GameObject:
   - component: {fileID: 1431772581}
   - component: {fileID: 1431772582}
   m_Layer: 0
-  m_Name: SettingController
+  m_Name: TableController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -346,9 +346,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78657d5d768a95e4f8794496ca319fcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: {x: 5, y: 5}
-  row: 3
-  column: 0
+  size: {x: 0.5, y: 0.5}
+  row: 2
+  column: 2
   posList:
   - array:
     - {x: -5, y: -5, z: 0}

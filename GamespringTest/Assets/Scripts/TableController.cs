@@ -5,7 +5,7 @@ using UnityEngine;
 using NaughtyAttributes;
 using Nodes;
 
-public class SettingController : MonoBehaviour
+public class TableController : MonoBehaviour
 {
     #region º¯¼ö
     [SerializeField] private Vector2 size;
