@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private CardDatabase cardDatabase;
     [SerializeField] private LevelDatabase levelDatabase;
+    [SerializeField] private SaveLoadDatabase saveLoadDatabase;
     /// <summary>
     /// 유니티에서 제공하는 timeScale은 모든 time(real 제외)의 영향을 주므로 분리.
     /// </summary>
@@ -26,6 +27,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance => instance;
     public CardDatabase CardDatabase => cardDatabase;
     public LevelDatabase LevelDatabase => levelDatabase;
+    public SaveLoadDatabase SaveLoadDatabase => saveLoadDatabase;
 
     public float GameTime => timeScales.gameScale * Time.deltaTime;
     public float UITime => timeScales.uiScale * Time.deltaTime;

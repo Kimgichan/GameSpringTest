@@ -15,6 +15,6 @@ MonoBehaviour:
   roundTimers:
   - 6
   - 10
-  - 20
-  - 20
-  - 20
+  - 50
+  - 40
+  - 30

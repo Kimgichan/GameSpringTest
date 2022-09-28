@@ -25,4 +25,9 @@ namespace Enums
         Play,
         Ready,
     }
+
+    public enum SaveLoadKind
+    {
+        Ranking,
+    }
 }

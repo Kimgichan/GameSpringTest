@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50ab04b1c3c838942884c519e87118f9, type: 3}
+  m_Name: SaveLoadDatabase
+  m_EditorClassIdentifier: 
+  key: "\u3141\u0352\u0305\u0312\u033F\u0343\u034C\u0301\u0340\u032D\u0318\u0349\u032E\u032E\u0353\u031C\u3147\u0304\u0313\u0306\u0346\u030B\u0301\u030A\u030D\u0308\u0341\u0348\u0356\u034D\u031D\u0323\u0316\u3134\u0309\u0302\u030B\u030A\u0304\u0312\u0314\u031F\u0329\u0345\u031E\u0318\u0318\u031F\u3141\u034C\u030C\u033F\u030E\u0344\u033F\u0326\u0316\u032D\u0332\u0329\u035A\u034D\u314B\u0304\u033F\u031A\u0313\u0352\u0300\u0302\u033E\u0357\u033E\u030A\u0346\u0345\u0348\u035A\u0349\u031E\u032C\u031E\u0316\u0330\u314C\u0341\u0302\u030E\u0343\u033D\u031C\u0332\u0326\u0324\u0332\u0332\u034D\u034E\u0354\u032E\u0354\u314A\u0314\u0304\u0344\u0309\u030C\u0313\u0311\u0317\u0319\u0318\u0319\u0333"
+  rankingCount: 8
+  rankingData:
+    points: 

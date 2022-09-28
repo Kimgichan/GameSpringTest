@@ -55,10 +55,17 @@ namespace Nodes
     }
 
     [System.Serializable]
-    public struct GameData
+    public class RankingData
     {
-        public int point;
-        public float clearTime;
+        /// <summary>
+        /// 인덱스값이 작을 수록 순위가 높음
+        /// </summary>
+        public List<int> points;
+
+        public RankingData()
+        {
+            points = new List<int>();
+        }
     }
 }
 

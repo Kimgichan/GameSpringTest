@@ -151,23 +151,6 @@ public class GameController : MonoBehaviour
         PlaceCard();
     }
 
-    /// <summary>
-    /// 이 함수는 게임의 종료를 알리는 것과 함께 '정리 or 초기화' 작업도 실행함.
-    /// </summary>
-    public void GameEnd()
-    {
-        if (timerCor != null)
-        {
-            StopCoroutine(timerCor);
-            timerCor = null;
-        }
-
-        currentRound = MaxRound;
-        StartRound();
-
-        UIController.Back();
-    }
-
     #region 이벤트
     /// <summary>
     /// 라운드가 모두 종료될 경우, 게임의 결과가 정해진 경우
@@ -327,12 +310,12 @@ public class GameController : MonoBehaviour
         {
             yield return wait;
         }
-        currentRound = 0;
 
+        currentRound = 0;
         this.UIController.Init();
         GameManager.Instance.EnterGameController(this);
 
-        GameEnd();
+        GameReset();
     }
 
     private void OnDestroy()
@@ -659,6 +642,7 @@ public class GameController : MonoBehaviour
 
         var bonus = Mathf.FloorToInt(CurrentRoundTime);
         currentPoint += bonus;
+        UIController.Point = Point;
 
         if (Round >= MaxRound)
         {
@@ -692,13 +676,16 @@ public class GameController : MonoBehaviour
 
     private void GameSuccess()
     {
+        var SL = GameManager.Instance.SaveLoadDatabase;
+        SL.RankingSizeUpdate();
+        SL.RenewalRanking(Point);
 
-        GameEnd();
+        GameReset();
     }
     private void GameFail()
     {
 
-        GameEnd();
+        GameReset();
     }
 
     /// <summary>
@@ -707,12 +694,33 @@ public class GameController : MonoBehaviour
     private void AddReward()
     {
         currentPoint += 1;
+        UIController.Point = currentPoint;
     }
     private void AddPanelty()
     {
         currentRoundTime -= 1f;
         UIController.ShowPanelty();
     }
+
+    /// <summary>
+    /// 이 함수는 게임의 종료를 알리는 것과 함께 '정리 or 초기화' 작업도 실행함.
+    /// </summary>
+    private void GameReset()
+    {
+        if (timerCor != null)
+        {
+            StopCoroutine(timerCor);
+            timerCor = null;
+        }
+
+        GameManager.Instance.SaveLoadDatabase.Load(SaveLoadKind.Ranking);
+
+        currentRound = MaxRound;
+        StartRound();
+
+        UIController.Back();
+    }
+
     #endregion
     #endregion
 }

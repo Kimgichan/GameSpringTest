@@ -15,7 +15,7 @@ public class UIController : MonoBehaviour
     [SerializeField] private GameObject lobbyPanel;
     [SerializeField] private Button startBtn;
     [SerializeField] private Button replayBtn;
-
+    [SerializeField] private RankingTableController rankingTableController;
 
     #region ShowPanel
     [Space(20)]
@@ -67,6 +67,8 @@ public class UIController : MonoBehaviour
             timer.text = $"Timer: {value.ToString("F3")}(s)";
         }
     }
+
+    public RankingTableController RankingTableController => rankingTableController;
     #endregion
 
 
@@ -131,8 +133,24 @@ public class UIController : MonoBehaviour
         if (GameManager.Instance == null || GameManager.Instance.GameController == null || GameManager.Instance.GameController.Round <= 0)
         {
             replayBtn.gameObject.SetActive(false);
+
+            if (GameManager.Instance == null || GameManager.Instance.GameController == null)
+            {
+                RankingTableController.gameObject.SetActive(false);
+            }
+            else
+            {
+                RankingTableController.gameObject.SetActive(true);
+                RankingTableController.RankingUpdate();
+            }
         }
-        else replayBtn.gameObject.SetActive(true);
+        else
+        {
+            replayBtn.gameObject.SetActive(true);
+
+            RankingTableController.gameObject.SetActive(true);
+            RankingTableController.RankingUpdate();
+        }
     }
 
     private void GameStart()
