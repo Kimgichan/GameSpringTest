@@ -17,5 +17,12 @@ namespace Enums
         Selected,
         Open,
         Close,
+        Out, // 게임 라운드에서 제외된 상태
+    }
+
+    public enum GameState
+    {
+        Play,
+        Ready,
     }
 }

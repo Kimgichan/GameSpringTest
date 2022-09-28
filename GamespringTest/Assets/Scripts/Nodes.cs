@@ -30,5 +30,35 @@ namespace Nodes
             this.uiScale = uiScale;
         }
     }
+
+    [System.Serializable]
+    public struct Int2
+    {
+        public int x;
+        public int y;
+
+        public Int2(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public static Int2 operator +(Int2 op1, Int2 op2)
+        {
+            return new Int2(op1.x + op2.x, op1.y + op2.y);
+        }
+
+        public static Int2 operator -(Int2 op1, Int2 op2)
+        {
+            return new Int2(op1.x - op2.x, op1.y - op2.y);
+        }
+    }
+
+    [System.Serializable]
+    public struct GameData
+    {
+        public int point;
+        public float clearTime;
+    }
 }
 

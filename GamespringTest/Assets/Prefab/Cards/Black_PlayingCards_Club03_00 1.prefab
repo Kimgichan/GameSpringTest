@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 7668066186788699662}
   - component: {fileID: 4131763463291831031}
   - component: {fileID: -7205276371787856996}
-  m_Layer: 0
+  - component: {fileID: 2135716989854869727}
+  m_Layer: 3
   m_Name: Black_PlayingCards_Club03_00 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,5 +95,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07a1f7d374bc1344da585346aa163b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  suitKind: 0
-  number: 0
+  suitKind: 3
+  number: 3
+  cardState: 0
+--- !u!65 &2135716989854869727
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2407788585431381547}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 5.6960616, y: 0.00000017695129, z: 8.872102}
+  m_Center: {x: 0, y: -9.313226e-10, z: 0}

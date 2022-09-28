@@ -7,6 +7,7 @@ using UnityEngine.Events;
 using DG.Tweening;
 
 using Nodes;
+using Enums;
 using NaughtyAttributes;
 
 
@@ -15,6 +16,7 @@ public class GameController : MonoBehaviour
     #region 변수
     [SerializeField] private Transform cardDeckTr;
     [SerializeField] private TableController tableController;
+    [SerializeField] private UIController uiController;
     [SerializeField] private int maxRound;
     [SerializeField] private int shuffleGap;
     [SerializeField] private float cardTurnSpeed;
@@ -22,18 +24,80 @@ public class GameController : MonoBehaviour
 
     [ReadOnly] [SerializeField] private List<Card> cards; // 인스턴스된 카드들
     [ReadOnly] [SerializeField] private List<int> cardDeck; // 카드의 순서
-    [ReadOnly] [SerializeField] private int round;
+
+    [ReadOnly] [SerializeField] private GameState gameState;
+
+    [ReadOnly] [SerializeField] private float currentRoundTime;
+    [ReadOnly] [SerializeField] private int currentRound;
+    [ReadOnly] [SerializeField] private int currentPoint;
+
+    /// <summary>
+    /// SelectedCard 프로퍼티를 사용할 것 (삭제)
+    /// </summary>
+    [ReadOnly] [SerializeField] private Card selectedCard;
 
     private UnityAction<GameController> gameEnd;
     private UnityAction<GameController> onDestroy;
+
+    private IEnumerator cardSettingCor;
+    private IEnumerator readyCor;
+    private IEnumerator timerCor;
 
     #endregion
 
 
     #region 프로퍼티
     public TableController TableController => tableController;
+    public UIController UIController => uiController;
     public float CardTurnSpeed => cardTurnSpeed;
     public float CardMoveSpeed => cardMoveSpeed;
+    public GameState GameState => gameState;
+
+    public float CurrentRoundTime => currentRoundTime;
+
+    public int MaxRound => maxRound;
+    public int Round => currentRound;
+
+    public int Point => currentPoint;
+
+    //private Card SelectedCard
+    //{
+    //    get => selectedCard;
+    //    set
+    //    {
+    //        if (value.CardState == CardState.Open) return;
+
+    //        if(value == null)
+    //        {
+    //            if (selectedCard != null)
+    //            {
+    //                selectedCard.CardAction(CardState.Close);
+    //                selectedCard = null;
+    //            }
+    //            return;
+    //        }
+
+    //        if(selectedCard == null)
+    //        {
+    //            selectedCard = value;
+    //            selectedCard.CardAction(CardState.Open);
+    //            return;
+    //        }
+
+    //        if (selectedCard == value) return;
+
+    //        value.CardAction(CardState.Open);
+    //        if (selectedCard.CardEquals(value))
+    //        {
+    //            // 점수 획득
+    //        }
+    //        else
+    //        {
+
+    //            // 실패 패널티
+    //        }
+    //    }
+    //}
     #endregion
 
 
@@ -51,8 +115,9 @@ public class GameController : MonoBehaviour
         StartRound();
     }
 
-    public void StartRound(bool roundUpdate = true)
+    public void StartRound(bool currentRoundUpdate = true)
     {
+        gameState = GameState.Ready;
         CardClear();
 
         if (!Application.isPlaying)
@@ -62,23 +127,45 @@ public class GameController : MonoBehaviour
         }
 
 
-        if (roundUpdate)
+        if (currentRoundUpdate)
         {
-            if (round >= maxRound)
+            if (currentRound >= maxRound)
             {
                 if (gameEnd != null)
                 {
                     gameEnd(this);
                 }
 
-                round = 0;
+                currentRound = 0;
+                currentPoint = 0;
                 return;
             }
-            round += 1;
+            currentRound += 1;
+            this.UIController.Round = Round;
         }
+
+        this.UIController.Timer = GameManager.Instance.LevelDatabase.GetRoundTimer(Round - 1);
+        this.UIController.Point = Point;
 
         Shuffle();
         PlaceCard();
+    }
+
+    /// <summary>
+    /// 이 함수는 게임의 종료를 알리는 것과 함께 '정리 or 초기화' 작업도 실행함.
+    /// </summary>
+    public void GameEnd()
+    {
+        if (timerCor != null)
+        {
+            StopCoroutine(timerCor);
+            timerCor = null;
+        }
+
+        currentRound = MaxRound;
+        StartRound();
+
+        UIController.Back();
     }
 
     #region 이벤트
@@ -149,6 +236,83 @@ public class GameController : MonoBehaviour
         onDestroy = null;
     }
 
+    public void SelectCard(Card card)
+    {
+        if (card.CardState == CardState.Open) return;
+
+        if (card == null)
+        {
+            if (selectedCard != null)
+            {
+                selectedCard.CardAction(CardState.Close);
+                selectedCard = null;
+            }
+            return;
+        }
+
+        if (selectedCard == null)
+        {
+            selectedCard = card;
+            selectedCard.CardAction(CardState.Open);
+            return;
+        }
+
+        if (selectedCard == card) return;
+
+        card.CardAction(CardState.Open);
+        if (selectedCard.CardEquals(card))
+        {
+            var beforeSelectedCard = selectedCard;
+
+            UnityAction<Card> successEvent = (thisCard) =>
+            {
+                thisCard.CardAction(CardState.Out);
+                beforeSelectedCard.CardAction(CardState.Out);
+
+                var isRoundEnd = true;
+                for (int i = 0, icount = cards.Count; i < icount; i++)
+                {
+                    if (cards[i].CardState != CardState.Out)
+                    {
+                        isRoundEnd = false;
+                    }
+                }
+
+                if (isRoundEnd)
+                {
+                    GameRoundClear();
+                }
+                AddReward();
+            };
+            successEvent += (Card thisCard) =>
+            {
+                thisCard.RemoveOpenEvent(successEvent);
+            };
+            card.AddOpenEvent(successEvent);
+            selectedCard = null;
+        }
+        else
+        {
+            // 실패 패널티
+            var beforeSelectedCard = selectedCard;
+
+            UnityAction<Card> failEvent = (thisCard) =>
+            {
+                thisCard.CardAction(CardState.Close);
+                beforeSelectedCard.CardAction(CardState.Close);
+                AddPanelty();
+            };
+            failEvent += (Card thisCard) =>
+            {
+                //Debug.Log("실패");
+                thisCard.RemoveOpenEvent(failEvent);
+            };
+            card.AddOpenEvent(failEvent);
+
+            selectedCard = null;
+        }
+    }
+
     #endregion
 
     #endregion
@@ -157,14 +321,18 @@ public class GameController : MonoBehaviour
 
     private IEnumerator Start()
     {
+        gameState = GameState.Ready;
         var wait = new WaitForSeconds(0.5f);
         while(GameManager.Instance == null)
         {
             yield return wait;
         }
-        round = 0;
+        currentRound = 0;
 
+        this.UIController.Init();
         GameManager.Instance.EnterGameController(this);
+
+        GameEnd();
     }
 
     private void OnDestroy()
@@ -177,7 +345,7 @@ public class GameController : MonoBehaviour
 
     private void Shuffle()
     {
-        var cardCount = GameManager.Instance.CardDB.CardCount;
+        var cardCount = GameManager.Instance.CardDatabase.CardCount;
         if(cardDeck == null || cardDeck.Count != cardCount)
         {
             if (cardDeck == null) cardDeck = new List<int>();
@@ -208,31 +376,34 @@ public class GameController : MonoBehaviour
 
         if(!GetRowColumn(out int row, out int column))
         {
-            Debug.LogWarning(round);
+            Debug.LogWarning(currentRound);
             return;
         }
 
         tableController.Setting(row, column);
 
         //카드 배치
-        StartCoroutine(CardSettingCor());
+
+        if (cardSettingCor != null) CardClear();
+        cardSettingCor = CardSettingCor();
+        StartCoroutine(cardSettingCor);
     }
 
     private bool GetRowColumn(out int row, out int column)
     {
-        if(round < 1 || round > maxRound)
+        if(currentRound < 1 || currentRound > maxRound)
         {
             row = -1;
             column = -1;
             return false;
         }
 
-        if(round == 1)
+        if(currentRound == 1)
         {
             row = 2;
             column = 2;
         }
-        else if(round == 2)
+        else if(currentRound == 2)
         {
             row = 4;
             column = 2;
@@ -248,11 +419,11 @@ public class GameController : MonoBehaviour
 
 
     /// <summary>
-    /// 카드 배치 중 중단했을 경우 정리 작업 아직 구현 안돼있음.
+    /// 카드 배치 
     /// </summary>
     private IEnumerator CardSettingCor()
     {
-        var wait = new WaitForSeconds(0.25f);
+        var wait = 0.25f;
         var row = tableController.Row;
         var column = tableController.Column;
 
@@ -277,7 +448,7 @@ public class GameController : MonoBehaviour
         }
 
         // 람다식에서 캡처할 변수
-        // card가 목적지에 도달했는지 체크용
+        // 배치된 모든 card가 목적지에 도달했는지 체크용
         var arriveCount = 0;
 
         for(int col = 0; col < column; col++)
@@ -286,12 +457,12 @@ public class GameController : MonoBehaviour
             {
                 var i = col * row + r;
 
-                var cardPrefab = GameManager.Instance.CardDB.GetCardPrefab(cardDeck[cardSeats[i] % cardKind]);
+                var cardPrefab = GameManager.Instance.CardDatabase.GetCardPrefab(cardDeck[cardSeats[i] % cardKind]);
                 var newCard = Instantiate(cardPrefab, tableController.transform);
                 newCard.transform.localScale = Vector3.one * 0.05f;
                 newCard.transform.position = cardDeckTr.position;
-                newCard.SetRotation(new Vector3(-90f, 180f, 0f));
-
+                newCard.SetRotation(new Vector3(-90f, 0f, 0f));
+                newCard.SetCardState(CardState.Close);
                 cards.Add(newCard);
 
                 #region 주석 (생성 때문에 배치 도중 렉같은게 걸리는 것 같아서 배치 순서를 뒤쪽으로 변경)
@@ -316,7 +487,7 @@ public class GameController : MonoBehaviour
             }
         }
 
-        yield return wait;
+        yield return StartCoroutine(GameManager.Instance.WaitCor_GameTimeScale(wait));
         for (int col = 0; col < column; col++)
         {
             for (int r = 0; r < row; r++)
@@ -329,22 +500,35 @@ public class GameController : MonoBehaviour
                 cards[i].AddMoveEvent((card) =>
                 {
                     arriveCount += 1;
-                    if (arriveCount >= TableController.Row * TableController.Column)
+                    if (arriveCount >= cards.Count)
                     {
                         // 카드가 각 위치에 도달하면 Ready이벤트 수행    
-                        Debug.Log("도착 완료");
+                        //Debug.Log("도착 완료");
+
+                        //Ready(CardState.Open);
+                        if (readyCor != null) StopCoroutine(readyCor);
+                        readyCor = ReadyCor(CardState.Open);
+                        StartCoroutine(readyCor);
                     }
                     card.RemoveAllMoveEvent();
                 });
 
-                yield return wait;
+                yield return StartCoroutine(GameManager.Instance.WaitCor_GameTimeScale(wait));
             }
         }
+
+        cardSettingCor = null;
     }
 
-    public void CardClear()
+    private void CardClear()
     {
         if (cards == null) return;
+
+        if(cardSettingCor != null)
+        {
+            StopCoroutine(cardSettingCor);
+            cardSettingCor = null;
+        }
 
         for (int i = 0, icount = cards.Count; i < icount; i++)
         {
@@ -353,6 +537,181 @@ public class GameController : MonoBehaviour
         }
 
         cards.Clear();
+    }
+
+    private IEnumerator ReadyCor(CardState cardState)
+    {
+        if (cardState == CardState.Selected)
+        {
+            readyCor = null;
+            yield break;
+        }
+
+        //var step1Wait = new WaitForSeconds(0.25f);
+        var step1Wait = 0.5f;
+        yield return null;
+
+        var pivotStep1 = new Int2(0, -1);
+
+        // 람다식에서 캡처할 변수
+        // 배치된 모든 카드가 turn을 수행했는지 체크용
+        var turnCount = 0;
+
+        //Step 1 : 이동
+        for(int i = 0, icount = TableController.Row + TableController.Column - 1; i<icount; i++)
+        {
+            if(pivotStep1.y < TableController.Column - 1)
+            {
+                pivotStep1.y += 1;
+            }
+            else
+            {
+                pivotStep1.x += 1;
+            }
+
+            var pivotStep2 = pivotStep1;
+            //Step 2 : 대각선 전파
+            while(pivotStep2.y >= 0 && pivotStep2.x < TableController.Row)
+            {
+                var card = cards[pivotStep2.y * TableController.Row + pivotStep2.x];
+
+                switch (cardState)
+                {
+                    case CardState.Open:
+                        {
+                            UnityAction<Card> openEvent = (thisCard) =>
+                            {
+                                turnCount += 1;
+
+                                if(turnCount >= cards.Count)
+                                {
+                                    if(readyCor != null)
+                                    {
+                                        StopCoroutine(readyCor);
+                                        readyCor = null;
+                                    }
+
+                                    this.StartCoroutine(CheckEventCor());
+                                }
+                            };
+                            openEvent += (Card thisCard) =>
+                            {
+                                thisCard.RemoveOpenEvent(openEvent);
+                            };
+
+                            card.AddOpenEvent(openEvent);
+                            card.CardAction(CardState.Open);
+                            break;
+                        }
+                    case CardState.Close:
+                        {
+                            UnityAction<Card> closeEvent = (thisCard) =>
+                            {
+                                turnCount += 1;
+
+                                if(turnCount >= cards.Count)
+                                {
+                                    // 게임 실행 이벤트
+                                    GameRun();
+                                }
+                            };
+                            closeEvent += (Card thisCard) =>
+                            {
+                                thisCard.RemoveCloseEvent(closeEvent);
+                            };
+
+                            card.AddCloseEvent(closeEvent);
+                            card.CardAction(CardState.Close);
+                            break;
+                        }
+                }
+
+                pivotStep2 += new Int2(1, -1);
+            }
+
+            yield return StartCoroutine(GameManager.Instance.WaitCor_GameTimeScale(step1Wait));
+        }
+
+        readyCor = null;
+    }
+
+    private IEnumerator CheckEventCor()
+    {
+        //var checkWait = new WaitForSeconds(2f);
+        var checkWait = 1.5f;
+
+        // 유저가 패를 확인할 수 있는 딜레이 이벤트
+        //yield return checkWait;
+        yield return GameManager.Instance.WaitCor_GameTimeScale(checkWait);
+
+        if (readyCor != null) StopCoroutine(readyCor);
+        readyCor = ReadyCor(CardState.Close);
+        StartCoroutine(readyCor);
+    }
+
+    private void GameRoundClear()
+    {
+        if (timerCor != null)
+        {
+            StopCoroutine(timerCor);
+            timerCor = null;
+        }
+
+        var bonus = Mathf.FloorToInt(CurrentRoundTime);
+        currentPoint += bonus;
+
+        if (Round >= MaxRound)
+        {
+            GameSuccess();
+        }
+        else StartRound();
+    }
+    private void GameRun()
+    {
+        gameState = GameState.Play;
+
+        if (timerCor != null) StopCoroutine(timerCor);
+        timerCor = TimerCor();
+        StartCoroutine(timerCor);
+    }
+    private IEnumerator TimerCor()
+    {
+        //currentRoundTime = 0f;
+        currentRoundTime = GameManager.Instance.LevelDatabase.GetRoundTimer(Round - 1);
+        while (currentRoundTime > 0f)
+        {
+            UIController.Timer = CurrentRoundTime;
+            yield return null;
+
+            currentRoundTime -= GameManager.Instance.GameTime;
+        }
+
+        UIController.Timer = 0f;
+        GameFail();
+    }
+
+    private void GameSuccess()
+    {
+
+        GameEnd();
+    }
+    private void GameFail()
+    {
+
+        GameEnd();
+    }
+
+    /// <summary>
+    /// 카드를 맞췄을 경우의 보상만 수행. 여유 시간이 남은 것에 따른 추가 보상은 GameRoundClear함수에서 진행
+    /// </summary>
+    private void AddReward()
+    {
+        currentPoint += 1;
+    }
+    private void AddPanelty()
+    {
+        currentRoundTime -= 1f;
+        UIController.ShowPanelty();
     }
     #endregion
     #endregion

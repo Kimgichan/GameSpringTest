@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 741852350806998011}
   - component: {fileID: 6446656176970548994}
   - component: {fileID: 4801867656425257476}
-  m_Layer: 0
+  - component: {fileID: 3911935251465033085}
+  m_Layer: 3
   m_Name: Black_PlayingCards_Spade05_00 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -95,4 +96,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   suitKind: 0
-  number: 0
+  number: 5
+  cardState: 0
+--- !u!65 &3911935251465033085
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4705075992077169630}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 5.6960616, y: 0.00000017695129, z: 8.872102}
+  m_Center: {x: 0, y: -9.313226e-10, z: 0}

@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 1001341535698219245}
   - component: {fileID: 6834761885588982804}
   - component: {fileID: 4639223504192853379}
-  m_Layer: 0
+  - component: {fileID: 824660571718601662}
+  m_Layer: 3
   m_Name: Black_PlayingCards_Heart01_00 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,5 +95,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07a1f7d374bc1344da585346aa163b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  suitKind: 0
-  number: 0
+  suitKind: 1
+  number: 1
+  cardState: 0
+--- !u!65 &824660571718601662
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5108530814853527752}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 5.6960616, y: 0.00000017695129, z: 8.872102}
+  m_Center: {x: 0, y: -9.313226e-10, z: 0}

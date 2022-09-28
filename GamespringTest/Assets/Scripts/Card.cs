@@ -38,7 +38,7 @@ public class Card : MonoBehaviour
     #region 프로퍼티
     public CardSuitKind SuitKind => suitKind;
     public int Number => number;
-    public string CardKind => $"{suitKind}_{GameManager.Instance.CardDB.IntToCardNumber(number)}";
+    public string CardKind => $"{suitKind}_{GameManager.Instance.CardDatabase.IntToCardNumber(number)}";
     public CardState CardState => cardState;
     #endregion
 
@@ -170,6 +170,14 @@ public class Card : MonoBehaviour
     {
         //transform.DOKill();
 
+        if (this.cardState == CardState.Out) return;
+
+        if(cardState == CardState.Out)
+        {
+            this.cardState = CardState.Out;
+            return;
+        }
+
         if (this.cardState != cardState)
         {
             if (cardActionCor != null)
@@ -226,6 +234,38 @@ public class Card : MonoBehaviour
         StartCoroutine(moveCor);
     }
 
+    public void SetCardState(CardState cardState)
+    {
+        if(cardActionCor != null)
+        {
+            StopCoroutine(cardActionCor);
+            cardActionCor = null;
+        }
+
+        this.cardState = cardState;
+        switch (cardState)
+        {
+            case CardState.Selected:
+                {
+                    placeAngles.y = -45f;
+                    transform.localEulerAngles = placeAngles;
+                    break;
+                }
+            case CardState.Open:
+                {
+                    placeAngles.y = 0f;
+                    transform.localEulerAngles = placeAngles;
+                    break;
+                }
+            case CardState.Close:
+                {
+                    placeAngles.y = -180f;
+                    transform.localEulerAngles = placeAngles;
+                    break;
+                }
+        }
+    }
+
     #endregion
 
     #endregion
@@ -250,15 +290,14 @@ public class Card : MonoBehaviour
     private IEnumerator OpenCor()
     {
         var GM = GameManager.Instance;
-
-        while (placeAngles.y > -180f)
+        while (placeAngles.y < 0f)
         {
             yield return null;
-            placeAngles.y -= GM.GameTime * GM.GameController.CardTurnSpeed;
+            placeAngles.y += GM.GameTime * GM.GameController.CardTurnSpeed;
             transform.localEulerAngles = placeAngles;
         }
 
-        placeAngles.y = -180f;
+        placeAngles.y = 0f;
         transform.localEulerAngles = placeAngles;
 
         if (openEvent != null)
@@ -272,15 +311,16 @@ public class Card : MonoBehaviour
     {
         var GM = GameManager.Instance;
 
-        while (placeAngles.y < 0f)
+        while (placeAngles.y > -180f)
         {
             yield return null;
-            placeAngles.y += GM.GameTime * GM.GameController.CardTurnSpeed;
+            placeAngles.y -= GM.GameTime * GM.GameController.CardTurnSpeed;
             transform.localEulerAngles = placeAngles;
         }
 
-        placeAngles.y = 0f;
+        placeAngles.y = -180f;
         transform.localEulerAngles = placeAngles;
+
 
         if (closeEvent != null)
         {

@@ -11,8 +11,8 @@ public class GameManager : MonoBehaviour
     #region 변수
     private static GameManager instance;
 
-    [SerializeField] private CardDatabase cardDB;
-
+    [SerializeField] private CardDatabase cardDatabase;
+    [SerializeField] private LevelDatabase levelDatabase;
     /// <summary>
     /// 유니티에서 제공하는 timeScale은 모든 time(real 제외)의 영향을 주므로 분리.
     /// </summary>
@@ -24,7 +24,8 @@ public class GameManager : MonoBehaviour
 
     #region 프로퍼티
     public static GameManager Instance => instance;
-    public CardDatabase CardDB => cardDB;
+    public CardDatabase CardDatabase => cardDatabase;
+    public LevelDatabase LevelDatabase => levelDatabase;
 
     public float GameTime => timeScales.gameScale * Time.deltaTime;
     public float UITime => timeScales.uiScale * Time.deltaTime;
@@ -63,6 +64,34 @@ public class GameManager : MonoBehaviour
         });
 
         this.gameController = gameController;
+    }
+
+    /// <summary>
+    /// GameTimeScale에 영향을 받는 Wait 코루틴
+    /// </summary>
+    /// <param name="timer"></param>
+    /// <returns></returns>
+    public IEnumerator WaitCor_GameTimeScale(float timer)
+    {
+        while(timer > 0f)
+        {
+            yield return null;
+            timer -= GameTime;
+        }
+    }
+
+    /// <summary>
+    /// UITimeScale에 영향을 받는 Wait 코루틴
+    /// </summary>
+    /// <param name="timer"></param>
+    /// <returns></returns>
+    public IEnumerator WaitCor_UITimeScale(float timer)
+    {
+        while(timer > 0f)
+        {
+            yield return null;
+            timer -= UITime;
+        }
     }
 
     #endregion
