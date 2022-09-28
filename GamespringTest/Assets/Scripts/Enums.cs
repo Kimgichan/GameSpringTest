@@ -11,4 +11,11 @@ namespace Enums
         Diamond,
         Club,
     }
+
+    public enum CardState
+    {
+        Selected,
+        Open,
+        Close,
+    }
 }

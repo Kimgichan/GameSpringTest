@@ -45,6 +45,12 @@ public class TableController : MonoBehaviour
         PositionSetting();
     }
 
+    /// <summary>
+    /// 로컬 포지션으로 사용할 생각으로 작업
+    /// </summary>
+    /// <param name="row"></param>
+    /// <param name="column"></param>
+    /// <returns></returns>
     public Vector3 GetPos(int row, int column)
     {
         return posList[column].array[row];
