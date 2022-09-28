@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
+using Enums;
+
 public class UIController : MonoBehaviour
 {
     #region 변수
@@ -26,6 +28,8 @@ public class UIController : MonoBehaviour
     [SerializeField] private Text panelty;
     #endregion
 
+    [Space(20)]
+    [SerializeField] private ResultPanelController resultPanelController;
 
     private Stack<UnityAction> backEvents;
     private IEnumerator paneltyCor;
@@ -69,6 +73,7 @@ public class UIController : MonoBehaviour
     }
 
     public RankingTableController RankingTableController => rankingTableController;
+    //public ResultPanelController ResultPanelController => resultPanelController;
     #endregion
 
 
@@ -102,10 +107,18 @@ public class UIController : MonoBehaviour
         paneltyCor = PaneltyCor();
         StartCoroutine(paneltyCor);
     }
+
+    public void EndResult(GameController gameController)
+    {
+        OpenResultPanel();
+
+        resultPanelController.TotalPoint = gameController.Point;
+        resultPanelController.ResultContent = gameController.GameResult;
+    }
     #endregion
 
     #region 비공개
-    private void Start()
+    private IEnumerator Start()
     {
         backEvents = new Stack<UnityAction>();
 
@@ -124,7 +137,15 @@ public class UIController : MonoBehaviour
             LobbyEnter();
         });
 
+        resultPanelController.gameObject.SetActive(false);
         Back();
+
+        while(GameManager.Instance == null || GameManager.Instance.GameController == null)
+        {
+            yield return null;
+        }
+
+        GameManager.Instance.GameController.AddEndEvent(EndResult);
     }
 
     private void LobbyEnter()
@@ -158,9 +179,10 @@ public class UIController : MonoBehaviour
         if(GameManager.Instance != null && GameManager.Instance.GameController != null)
         {
             var GC = GameManager.Instance.GameController;
-            GC.StartRound();
-
             GameReplay();
+
+            GC.GameReset(false);
+            GC.StartRound();
         }
     }
 
@@ -181,6 +203,19 @@ public class UIController : MonoBehaviour
         panelty.enabled = false;
         paneltyCor = null;
     }
+
+    private void OpenResultPanel()
+    {
+        resultPanelController.gameObject.SetActive(true);
+        backEvents.Push(CloseResultPanel);
+    }
+
+    private void CloseResultPanel()
+    {
+        resultPanelController.gameObject.SetActive(false);
+        Back();
+    }
+
     #endregion
     #endregion
 }

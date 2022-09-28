@@ -30,4 +30,12 @@ namespace Enums
     {
         Ranking,
     }
+
+    public enum GameResult 
+    {
+        None, // 경기 결과가 아직 나오지 않음
+        Success, 
+        Fail,
+        Renewal, // 성공했을 뿐만 아니라 기록이 갱신됐을 경우
+    }
 }

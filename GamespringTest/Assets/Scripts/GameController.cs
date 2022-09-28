@@ -26,6 +26,7 @@ public class GameController : MonoBehaviour
     [ReadOnly] [SerializeField] private List<int> cardDeck; // 카드의 순서
 
     [ReadOnly] [SerializeField] private GameState gameState;
+    [ReadOnly] [SerializeField] private GameResult gameResult;
 
     [ReadOnly] [SerializeField] private float currentRoundTime;
     [ReadOnly] [SerializeField] private int currentRound;
@@ -59,6 +60,8 @@ public class GameController : MonoBehaviour
     public int Round => currentRound;
 
     public int Point => currentPoint;
+
+    public GameResult GameResult => gameResult;
 
     //private Card SelectedCard
     //{
@@ -131,11 +134,6 @@ public class GameController : MonoBehaviour
         {
             if (currentRound >= maxRound)
             {
-                if (gameEnd != null)
-                {
-                    gameEnd(this);
-                }
-
                 currentRound = 0;
                 currentPoint = 0;
                 return;
@@ -144,6 +142,7 @@ public class GameController : MonoBehaviour
             this.UIController.Round = Round;
         }
 
+        gameResult = GameResult.None;
         this.UIController.Timer = GameManager.Instance.LevelDatabase.GetRoundTimer(Round - 1);
         this.UIController.Point = Point;
 
@@ -294,6 +293,36 @@ public class GameController : MonoBehaviour
 
             selectedCard = null;
         }
+    }
+
+    /// <summary>
+    /// 이 함수는 게임의 종료를 알리는 것과 함께 '정리 or 초기화' 작업도 실행함.
+    /// isGameEnd = false면 게임 엔드 이벤트를 call하지 않음. 게임 정리 or 초기화는 진행함.
+    /// </summary>
+    public void GameReset(bool isGameEnd = true)
+    {
+        if (readyCor != null) StopCoroutine(readyCor);
+
+        if (isGameEnd)
+        {
+            if (gameEnd != null)
+            {
+                gameEnd(this);
+            }
+        }
+
+        if (timerCor != null)
+        {
+            StopCoroutine(timerCor);
+            timerCor = null;
+        }
+
+        GameManager.Instance.SaveLoadDatabase.Load(SaveLoadKind.Ranking);
+
+        currentRound = MaxRound;
+        StartRound();
+
+        //UIController.Back();
     }
 
     #endregion
@@ -471,6 +500,7 @@ public class GameController : MonoBehaviour
         }
 
         yield return StartCoroutine(GameManager.Instance.WaitCor_GameTimeScale(wait));
+
         for (int col = 0; col < column; col++)
         {
             for (int r = 0; r < row; r++)
@@ -499,7 +529,6 @@ public class GameController : MonoBehaviour
                 yield return StartCoroutine(GameManager.Instance.WaitCor_GameTimeScale(wait));
             }
         }
-
         cardSettingCor = null;
     }
 
@@ -678,13 +707,18 @@ public class GameController : MonoBehaviour
     {
         var SL = GameManager.Instance.SaveLoadDatabase;
         SL.RankingSizeUpdate();
-        SL.RenewalRanking(Point);
+
+        if (SL.RenewalRanking(Point))
+        {
+            gameResult = GameResult.Renewal;
+        }
+        else gameResult = GameResult.Success;
 
         GameReset();
     }
     private void GameFail()
     {
-
+        gameResult = GameResult.Fail;
         GameReset();
     }
 
@@ -700,25 +734,6 @@ public class GameController : MonoBehaviour
     {
         currentRoundTime -= 1f;
         UIController.ShowPanelty();
-    }
-
-    /// <summary>
-    /// 이 함수는 게임의 종료를 알리는 것과 함께 '정리 or 초기화' 작업도 실행함.
-    /// </summary>
-    private void GameReset()
-    {
-        if (timerCor != null)
-        {
-            StopCoroutine(timerCor);
-            timerCor = null;
-        }
-
-        GameManager.Instance.SaveLoadDatabase.Load(SaveLoadKind.Ranking);
-
-        currentRound = MaxRound;
-        StartRound();
-
-        UIController.Back();
     }
 
     #endregion

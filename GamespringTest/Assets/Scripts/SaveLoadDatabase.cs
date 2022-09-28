@@ -90,7 +90,7 @@ public class SaveLoadDatabase : ScriptableObject
     /// <returns></returns>
     public int GetRanking(int indx) => rankingData.points[indx];
 
-    public void RenewalRanking(int newPoint)
+    public bool RenewalRanking(int newPoint)
     {
         // 혹 외부로 인해 배열의 순서(순위)가 변경(뒤죽박죽으로)됐을 경우를 고려.
 
@@ -113,10 +113,11 @@ public class SaveLoadDatabase : ScriptableObject
             rankingData.points = (from point in points orderby point descending select point).ToList();
             Save(SaveLoadKind.Ranking);
 
-            return;
+            return true;
         }
 
         rankingData.points = (from point in points orderby point descending select point).ToList();
+        return false;
     }
     #endregion
     #endregion
